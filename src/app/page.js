@@ -9,39 +9,81 @@ export default function Home() {
   const [apiKey, setApiKey] = useState("");
   const name = "Rodoc";
   const SYSTEM_MESSAGE =
-    "You are RoDoc, a trained Doctor and versatile AI created by Haruna Faruk using state-of the art ML models and APIs";
-  const [messageHistory, setMessageHistory] = useState([
+    "You are Rodoc, a trained Doctor and versatile AI created by Haruna Faruk using state-of the art ML models and APIs";
+  const [messages, setMessages] = useState([
     { role: "system", content: SYSTEM_MESSAGE },
   ]);
   const [userMessage, setUserMessage] = useState("");
   const API_URL = "https://api.openai.com/v1/chat/completions";
 
   // Send the Prompt
-  async function sendRequest() {
-    // update the message history
-    const newMessage = { role: "user", content: userMessage };
+  const sendRequest = async () => {
+    const updatedMessages = [
+      ...messages,
+      {
+        role: "user",
+        content: userMessage,
+      },
+    ];
 
-    const newMessageHistory = [...messageHistory, newMessage];
-
-    setMessageHistory(newMessageHistory);
+    setMessages(updatedMessages);
     setUserMessage("");
 
-    const response = await fetch(API_URL, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: "Bearer " + apiKey,
-      },
-      body: JSON.stringify({
-        model: "gpt-3.5-turbo",
-        messages: newMessageHistory,
-      }),
-    });
-    const data = await response.json();
-    const newBotMessage = data.choices[0].message;
-    const newMessageHistory2 = [...newMessageHistory, newBotMessage];
-    setMessageHistory(newMessageHistory2);
-  }
+    try {
+      const response = await fetch(API_URL, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${apiKey}`,
+        },
+        body: JSON.stringify({
+          model: "gpt-3.5-turbo",
+          messages: updatedMessages,
+          stream: true,
+        }),
+      });
+
+      const reader = response.body.getReader();
+
+      let newMessage = "";
+      const parser = createParser((event) => {
+        if (event.type === "event") {
+          const data = event.data;
+          if (data === "[DONE]") {
+            return;
+          }
+          const json = JSON.parse(event.data);
+          const content = json.choices[0].delta.content;
+
+          if (!content) {
+            return;
+          }
+
+          newMessage += content;
+
+          const updatedMessages2 = [
+            ...updatedMessages,
+            { role: "assistant", content: newMessage },
+          ];
+
+          setMessages(updatedMessages2);
+        } else {
+          return "";
+        }
+      });
+
+      // eslint-disable-next-line
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        const text = new TextDecoder().decode(value);
+        parser.feed(text);
+      }
+    } catch (error) {
+      console.error("error");
+      window.alert("Error:" + error.message);
+    }
+  };
 
   return (
     <>
@@ -65,11 +107,11 @@ export default function Home() {
         {/* Message History */}
         <div className="flex-1 overflow-y-scroll">
           <div className="max-w-screen-md mx-auto w-full px-4">
-            {messageHistory
+            {messages
               .filter((message) => message.role !== "system")
               .map((message, index) => (
                 <div key={index} className="my-3">
-                  <div className="fon-bold">
+                  <div className="font-bold">
                     {message.role === "user" ? "You" : name}
                   </div>
                   <div className="text-lg prose">
