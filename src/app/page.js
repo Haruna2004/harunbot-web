@@ -1,135 +1,67 @@
-"use client";
-
-//Come Back to put Authentication
-import { useState, React } from "react";
-import { ReactMarkdown } from "react-markdown/lib/react-markdown";
 import Head from "next/head";
-import Navbar from "@/components/Navbar";
-import { streamOpenAIResponse } from "@/utils/openai";
+import Navbar from "../components/Navbar";
+import useOpenAIMessages from "@/utils/openai";
+import MessageInput from "@/components/MessageInput";
+import MessageHistory from "@/components/MessageHistory";
+import Skills from "@/components/Skills";
 import { supabase } from "@/lib/supabaseClient";
+import { toast } from "react-hot-toast";
+import { useRouter } from "next/navigation";
+import PageLayout from "../components/PageLayout";
 
 export default function Home() {
   const name = "Rodoc";
+  const { history, sending, sendMessages } = useOpenAIMessages();
   const user = supabase.auth.getSession();
+  const router = useRouter();
 
-  const SYSTEM_MESSAGE =
-    "You are Rodoc, a trained Doctor and versatile AI created by Haruna Faruk using state-of the art ML models and APIs";
-
-  const [messages, setMessages] = useState([
-    { role: "system", content: SYSTEM_MESSAGE },
-  ]);
-
-  const [userMessage, setUserMessage] = useState("");
-
-  const handleKeyDown = (e) => {
-    if (e.key === "Enter" && !e.shiftKey) {
-      e.preventDefault();
-      sendRequest();
-    }
-  };
+  //Connect To supabase
 
   // Send the Prompt
-  const sendRequest = async () => {
-    if (!user) {
-      alert("Please log in to send a message");
-      return;
-    }
-
-    if (!userMessage) {
-      alert("Please enter a message before you hit send");
-      return;
-    }
-
-    const oldUserMessage = userMessage;
-    const oldMessages = messages;
-
-    const updatedMessages = [
-      ...messages,
-      {
-        role: "user",
-        content: userMessage,
-      },
-    ];
-
-    setMessages(updatedMessages);
-    setUserMessage("");
-
-    try {
-      const response = await fetch("/api/chat", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          model: "gpt-3.5-turbo",
-          messages: updatedMessages,
-          stream: true,
-        }),
-      });
-      if (response.status !== 200) {
-        throw new Error("OpenAI API returned an error");
-      }
-
-      streamOpenAIResponse(response, (newMessage) => {
-        // console.log("newMessage:", newMessage);
-        const updatedMessages2 = [
-          ...updatedMessages,
-          { role: "assistant", content: newMessage },
-        ];
-        setMessages(updatedMessages2);
-      });
-    } catch (error) {
-      console.error("error");
-
-      setUserMessage(oldUserMessage);
-      setMessages(oldMessages);
-      window.alert("Error:" + error.message);
-    }
-  };
+  //handle send to here also to superbase
+  async function handleSend(newMessages) {
+    return;
+  }
 
   return (
     <>
       <Head>
         <title>Rodoc- Health Overseer AI</title>
+        <meta
+          name="description"
+          content="Jobot is a general pupose, programmable & extensible AI developed by Haruna, using start of the art machine learning models and APIs."
+        />
+        <link rel="icon" href="/rodoc_icon.png" type="image/png" />
+        <meta property="og:image" content="/jobot_meta.png" />
       </Head>
-      <div className="flex flex-col h-screen">
-        {/* Navigation Bar */}
+
+      <PageLayout>
         <Navbar />
-        {/* Message History */}
-        <div className="flex-1 overflow-y-scroll">
-          <div className="max-w-screen-md mx-auto w-full px-4">
-            {messages
-              .filter((message) => message.role !== "system")
-              .map((message, index) => (
-                <div key={index} className="my-3">
-                  <div className="font-bold">
-                    {message.role === "user" ? "You" : name}
-                  </div>
-                  <div className="text-lg prose">
-                    <ReactMarkdown>{message.content}</ReactMarkdown>
-                  </div>
-                </div>
-              ))}
-          </div>
-        </div>
-        {/* Message Input Box */}
-        <div>
-          <div className="w-full max-w-screen-md mx-auto flex px-4 pb-4">
-            <textarea
-              className="border outline-none text-lg rounded-md p-1 flex-1"
-              rows={1}
-              value={userMessage}
-              onChange={(e) => setUserMessage(e.target.value)}
+        {history.length <= 1 && (
+          <div className="flex-1 overflow-y-auto">
+            <div className="mx-auto max-w-4xl overflow-y-auto w-full">
+              <h1 className="mx-auto mt-4 my-6 w-full max-w-4xl text-3xl md:text-4xl font-medium text-center">
+                {name} - Health Overseer AI
+              </h1>
+            </div>
+
+            <MessageInput
+              sending={sending}
+              sendMessages={handleSend}
+              placeholder="Ask me anything..."
             />
-            <button
-              onClick={sendRequest}
-              className="bg-blue-500 hover:bg-blue-600 border rounded-md text-white text-lg w-20 p-1 ml-2"
-            >
-              Send
-            </button>
+
+            <Skills />
           </div>
-        </div>
-      </div>
+        )}
+
+        {history.length > 1 && (
+          <>
+            <MessageHistory history={history} />
+            <MessageInput sendMessages={handleSend} sending={sending} />
+          </>
+        )}
+      </PageLayout>
     </>
   );
 }
