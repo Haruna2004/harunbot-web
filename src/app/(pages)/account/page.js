@@ -30,7 +30,6 @@ export default function Account() {
   }
 
   if (!profileData) {
-    console.log(profileData, "profile", user);
     return <div>Could not get {user?.email} profile data</div>;
   }
 
@@ -67,7 +66,7 @@ export default function Account() {
                 label="Last Name"
                 required
                 value={profileData.last_name}
-                onChange={makeOnChange("first_name")}
+                onChange={makeOnChange("last_name")}
               />
               <TextArea
                 field="bio"

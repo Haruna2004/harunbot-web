@@ -3,6 +3,8 @@ import { OpenAIStream } from "@/utils/openai";
 // import { createMiddlewareSupabaseClient } from "@supabase/auth-helpers-nextjs";
 import { supabase } from "@/lib/supabaseClient";
 
+export const runtime = "edge";
+
 export async function POST(req, res) {
   // const supabase = createMiddlewareClient({ req, res });
   const body = await req.json();
@@ -20,7 +22,3 @@ export async function POST(req, res) {
 
   return new Response(stream, { status: 200 });
 }
-
-export const config = {
-  runtime: "edge",
-};
