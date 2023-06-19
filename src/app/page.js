@@ -6,6 +6,7 @@ import useOpenAIMessages from "@/utils/useOpenai";
 import MessageInput from "@/components/MessageInput";
 import MessageHistory from "@/components/MessageHistory";
 import Templates from "@/components/Templates";
+import Skills from "@/components/Skills";
 // import Skills from "@/components/Skills";
 // import { supabase } from "@/lib/supabaseClient";
 // import { toast } from "react-hot-toast";
@@ -54,7 +55,8 @@ export default function Home() {
               placeholder="Ask me anything..."
             />
 
-            <Templates />
+            {/* <Templates /> */}
+            <Skills />
           </div>
         )}
 

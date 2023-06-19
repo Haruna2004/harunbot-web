@@ -8,7 +8,7 @@ import toast, { Toaster } from "react-hot-toast";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 
-export default function page() {
+export default function Login() {
   const [email, setEmail] = useState("");
   const [code, setCode] = useState("");
   const router = useRouter();
@@ -43,7 +43,7 @@ export default function page() {
       type: "magiclink",
     });
 
-    if (data) {
+    if (data?.user) {
       toast.success("Signed in successfully");
       console.log("Signed in successfully", data);
       router.push("/");

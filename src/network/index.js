@@ -1,3 +1,6 @@
+import { toast } from "react-hot-toast";
+
+//Helpers for Templates
 export const TEMPLATES_BASE_URL =
   "https://raw.githubusercontent.com/JovianHQ/jobot/main/templates";
 
@@ -47,4 +50,47 @@ export async function getTemplate(slug) {
   template.userPrompt = userPrompt;
 
   return template;
+}
+
+// Helper to get supabase profile
+export async function fetchUserProfile(supabase, user) {
+  if (!user) {
+    return null;
+  }
+  try {
+    const { data, error } = await supabase
+      .from("profiles")
+      .select("*")
+      .eq("id", user.id)
+      .single();
+
+    if (error) {
+      throw error;
+    }
+
+    if (data) {
+      return data;
+    }
+  } catch (error) {
+    console.error("Error while fetch user profile", error);
+  }
+}
+
+export async function updateUserProfile(supabase, profileData) {
+  try {
+    const { error } = await supabase
+      .from("profiles")
+      .update(profileData)
+      .eq("id", profileData.id);
+
+    if (error) {
+      throw error;
+    }
+
+    toast.success("Profile updated!");
+    return true;
+  } catch (e) {
+    toast.error("Failed to update profile");
+    console.error("Failed to update profile", e);
+  }
 }
