@@ -1,56 +1,55 @@
 "use client";
-
-import EditSkillForm from "@/components/EditSkillForm";
-import Navbar from "@/components/Navbar";
-import { fetchUserProfile } from "@/network";
-import { useSupabaseClient, useUser } from "@supabase/auth-helpers-react";
 import Head from "next/head";
+import EditSkillForm from "./EditSkillForm";
+import Navbar from "@/components/Navbar";
+import { isJson } from "@/utils";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { toast } from "react-hot-toast";
+import { useSupabaseClient, useUser } from "@supabase/auth-helpers-react";
 
-export default function BuildPage() {
+export default function EditSkillPage({ skill }) {
+  const [skillData, setSkillData] = useState(skill);
   const supabase = useSupabaseClient();
   const user = useUser();
   const router = useRouter();
-  const name = "Jobot";
 
   async function handleSubmit(e) {
     e.preventDefault();
-    if (!user) {
-      toast.error("You must be logged in to build a skill");
-      return;
-    }
-
-    const userProfile = await fetchUserProfile(supabase, user);
-
     try {
-      const newSkill = {
+      const updatedSkill = {
         title: skillData.title,
         slug: skillData.slug,
         description: skillData.description,
         system_prompt: skillData.system_prompt,
         user_prompt: skillData.user_prompt,
-        inputs: JSON.parse(skillData.inputs),
+        inputs: isJson(skillData.inputs)
+          ? skillData.inputs
+          : JSON.parse(skillData.inputs),
         user_id: user.id,
       };
 
-      const { error } = await supabase.from("skills").insert(newSkill);
+      const { error } = supabase
+        .from("skills")
+        .update(updatedSkill)
+        .eq("id", skillData.id);
 
       if (error) throw error;
 
-      toast.success("Skill created successfully");
-      router.push(`${userProfile.username}/${skillData.slug}`);
+      toast.success("Skill updated successfully");
+      router.push(`/${skill.profiles.username}/${updatedSkill.slug}`);
     } catch (error) {
-      toast.error("Error in creating skill:", error.message);
-      console.error("Error creating skill:", error.message);
+      toast.error("Failed to update skill:" + error.message);
+      console.error("Error updating skill:", error);
     }
   }
-  const [skillData, setSkillData] = useState({});
+
+  if (!skill) return null;
+
   return (
     <>
       <Head>
-        <title>Build a Skill - {name}</title>
+        <title>{`Edit Skill - ${skill.title}`}</title>
       </Head>
       <div className="flex flex-col h-screen">
         <Navbar />
@@ -59,13 +58,11 @@ export default function BuildPage() {
             <h1 className="text-center mx-auto text-4xl font-medium">
               Build a Skill
             </h1>
-            <div className="mx-auto mt-4 mb-4 max-w-xl text-center text-gray-500 sm:text-base">
-              Create a shearable and reusable skill
-            </div>
             <EditSkillForm
               skillData={skillData}
               setSkillData={setSkillData}
               onSubmit={handleSubmit}
+              editMode
             />
           </div>
         </div>

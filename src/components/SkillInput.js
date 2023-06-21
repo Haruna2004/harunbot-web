@@ -1,6 +1,6 @@
 import classNames from "classnames";
 
-export default function TemplateInput({
+export default function SkillInput({
   field,
   title,
   placeholder,

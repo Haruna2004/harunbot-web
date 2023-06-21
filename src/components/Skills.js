@@ -1,6 +1,7 @@
 import { supabase } from "@/lib/supabaseClient";
 import { makeDisplayName } from "@/utils";
 import Image from "next/image";
+import Link from "next/link";
 import { useEffect, useState } from "react";
 import { toast } from "react-hot-toast";
 
@@ -40,7 +41,7 @@ export default function Skills() {
         >
           {skills.map((skill) => (
             <li
-              className="group col-span-1 cursor-pointer divide-y divide-gray-200 rounded-lg border bg-white hover:shadow dark:border-gray-400 dark:bg-transparent"
+              className="group col-span-1 cursor-pointer divide-y divide-gray-200 rounded-lg border bg-white hover:shadow dak:border-gray-400 dak:bg-transparent"
               key={skill.slug}
             >
               <Link href={`/${skill.profiles.username}/${skill.slug}`}>
@@ -62,7 +63,7 @@ export default function Skills() {
                   <div className="mt-2 text-gray-500 font-medium text-sm">
                     {makeDisplayName(skill.profiles)}
                   </div>
-                  <h3 className="mt-2 truncate text-lg font-medium text-gray-900 group-hover:text-blue-600 dark:text-white">
+                  <h3 className="mt-2 truncate text-lg font-medium text-gray-900 group-hover:text-blue-600 dak:text-white">
                     {skill.title}
                   </h3>
 

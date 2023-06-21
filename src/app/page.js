@@ -5,7 +5,6 @@ import Navbar from "../components/Navbar";
 import useOpenAIMessages from "@/utils/useOpenai";
 import MessageInput from "@/components/MessageInput";
 import MessageHistory from "@/components/MessageHistory";
-import Templates from "@/components/Templates";
 import Skills from "@/components/Skills";
 // import Skills from "@/components/Skills";
 // import { supabase } from "@/lib/supabaseClient";
@@ -54,8 +53,6 @@ export default function Home() {
               sendMessages={sendMessages}
               placeholder="Ask me anything..."
             />
-
-            {/* <Templates /> */}
             <Skills />
           </div>
         )}

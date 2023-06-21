@@ -1,50 +1,21 @@
-"use client";
-import Head from "next/head";
-import Navbar from "@/components/Navbar";
-import useOpenAIMessages from "@/utils/useOpenai";
-import MessageHistory from "@/components/MessageHistory";
-import { getTemplate } from "@/network";
-import MessageInput from "@/components/MessageInput";
-import Template from "@/components/Template";
-import { useParams } from "next/navigation";
-import { useEffect, useState } from "react";
+import { SkillPage } from "@/components/SkillPage";
+import { createServerComponentClient } from "@supabase/auth-helpers-nextjs";
+import { cookies } from "next/headers";
 
-export default function TemplatePage({}) {
-  const name = "Rodoc";
-  const { history, sending, sendMessages } = useOpenAIMessages();
-  const { slug } = useParams();
-  const [template, setTemplate] = useState("");
+export default async function page({ params }) {
+  const supabase = createServerComponentClient({ cookies });
+  const slug = params.slug;
+  const username = params.username;
+  const { data: skills, error } = await supabase
+    .from("skills")
+    .select("*,profiles(username,first_name,last_name)")
+    .eq("slug", slug)
+    .eq("profiles.username", username)
+    .limit(1);
 
-  useEffect(() => {
-    getTemplate(slug).then((temp) => setTemplate(temp));
-  }, [slug]);
-
-  if (!template) {
-    return null;
+  if (error || !skills || skills.length === 0) {
+    return <div>not found</div>;
   }
-  return (
-    <>
-      <Head>
-        <title>
-          {template.title} - {name}
-        </title>
-        <meta name="description" content={template.description} />
-        <link rel="icon" href="/rodoc_icon.png" type="image/png" />
-        <meta property="og:image" content="/jobot_meta.png" />
-      </Head>
 
-      <div className="flex flex-col h-screen">
-        <Navbar />
-        {history.length === 1 && (
-          <Template template={template} sendMessages={sendMessages} />
-        )}
-        {history.length > 1 && (
-          <>
-            <MessageHistory history={history} />
-            <MessageInput sending={sending} sendMessages={sendMessages} />
-          </>
-        )}
-      </div>
-    </>
-  );
+  return <SkillPage skill={skills[0]} />;
 }

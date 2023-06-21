@@ -71,7 +71,7 @@ export default function ({ skillData, setSkillData, onSubmit, editMode }) {
           <span>
             Input Fields (
             <Link
-              href="https://github.com/aakashns/60a32f4f05ff52fcd80b190492a1911"
+              href="https://gist.github.com/aakashns/60a32f4f05ff052fcd80b190492a1911"
               target="_blank"
               rel="noreferrer"
               className="text-blue-500 hover:text-blue-600"
