@@ -1,24 +1,38 @@
 import { OpenAIStream } from "@/utils/openai";
-// import { createMiddlewareClient } from "@supabase/auth-helpers-nextjs";
-// import { createMiddlewareSupabaseClient } from "@supabase/auth-helpers-nextjs";
-import { supabase } from "@/lib/supabaseClient";
+// import { NextResponse } from "next/server";
+// import { headers } from "next/headers";
+import { getChatResponseHeaders, verifyServerSideAuth } from "@/network";
 
 export const runtime = "edge";
 
 export async function POST(req, res) {
-  // const supabase = createMiddlewareClient({ req, res });
-  const body = await req.json();
+  // Todo - verify the user from authenticated user
+  // const autenticated = await verifyServerSideAuth(req, res);
 
+  // if (!autenticated) {
+  //   return NextResponse.json({ statusText: "Unauthorized" }, { status: 401 });
+  // }
+
+  const body = await req.json();
   body.model = "gpt-3.5-turbo";
 
-  // you can be back to change this to (data: {user},error)
-  const user = await supabase.auth.getSession();
+  const headers = getChatResponseHeaders();
 
-  if (!user) {
-    return new Response("Unauthorized", { status: 401 });
+  if (body.stream) {
+    const stream = await OpenAIStream(body);
+    return new Response(stream, { status: 200, headers });
+  } else {
+    const res = await fetch("https://api.openai.com/v1/chat/completions", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${process.env.OPENAI_API_KEY}`,
+      },
+      body: JSON.stringify(body),
+    });
+    const resJson = await res.text();
+    console.log(resJson);
+    headers["Content-Type"] = "application/json";
+    return new Response(resJson, { status: 200, headers });
   }
-
-  const stream = await OpenAIStream(body);
-
-  return new Response(stream, { status: 200 });
 }

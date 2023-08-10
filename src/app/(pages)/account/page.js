@@ -9,6 +9,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { fetchUserProfile, updateUserProfile } from "@/network";
 import { useSupabaseClient, useUser } from "@supabase/auth-helpers-react";
+import ManageApiKeys from "@/components/ManageApiKeys";
 
 export default function Account() {
   const name = "Jobot";
@@ -91,7 +92,7 @@ export default function Account() {
                 </Link>
               </div>
             </form>
-            {/* <ManageApiKeys /> */}
+            <ManageApiKeys />
           </div>
         </div>
       </div>
